@@ -1,5 +1,5 @@
 # Payee Payment-API 
-
+## API
 API accepts payment transactions ;
 ```json
  {
@@ -21,7 +21,18 @@ performs validation and sends a booking request to booking-system;
     <transactionId>transaction-id-123</transactionId>
 </BookingRequest>
 ```
-booking-system is a mock that acks every message and returns;
+then returns 200 response to the client.
+
+Whenever it receives a bookingResponse from bookingSystem the it make a HTTP Post call to CALLBACk_URL(whichs is set in the environment vars, you can find it in the docker-compose.yml file). Callback;
+```json
+{
+  "transactionId" : "transaction-id-123",
+  "status" : "A" /* A: Accepted, R:Rejected*/ 
+}
+```
+
+## Booking-System
+Booking-system is a mock that acks every message(send by API, check the BookingRequest message above) and returns;
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <BookingResponse>
@@ -40,3 +51,5 @@ You can run whole application with the following components;
 - booking-system
 - mock-callback  
 by running **docker-compose up** (for shutdown **docker-compose down**)
+
+In order to generate images of api and booking-system you need to run maven spring-boot plugin's build:image task.
