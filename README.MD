@@ -27,7 +27,7 @@ booking-system is a mock that acks every message and returns;
 <BookingResponse>
     <transactionId>transaction-id-123</transactionId>
     <code>0</code>
-    <description>NL000000000000002</description>
+    <description></description>
 </BookingResponse>
 ```
 
