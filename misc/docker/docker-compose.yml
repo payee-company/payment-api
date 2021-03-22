@@ -8,6 +8,8 @@ services:
       MYSQL_USER: 'payments'
       MYSQL_PASSWORD: 'password'
       MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - "3306:3306"
     volumes:
       - ./mysql-dump/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:

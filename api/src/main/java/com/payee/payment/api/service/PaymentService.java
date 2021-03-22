@@ -10,6 +10,7 @@ import com.payee.payment.api.resource.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -28,13 +29,23 @@ public class PaymentService {
     @Autowired
     JmsTemplate template;
 
+    @Transactional
     public void execute(Transaction transaction) throws ValidationException {
         validateAmount(transaction);
         AccountEntity debtor = accountRepository.findById(transaction.getDebtorIban()).orElseThrow(() -> new ValidationException("Debtor doesnt't exist."));
         AccountEntity creditor = accountRepository.findById(transaction.getCreditorIban()).orElseThrow(() -> new ValidationException("Creditor doesnt't exist."));
         validate(debtor, creditor, transaction);
+        updateBalances(debtor, creditor, transaction);
         paymentRepository.save(PaymentEntity.from(debtor, creditor, transaction));
         template.convertAndSend("booking_request", createBookingRequest(debtor, creditor, transaction));
+    }
+
+
+    private void updateBalances(AccountEntity debtor, AccountEntity creditor, Transaction transaction){
+        debtor.setBalance(debtor.getBalance().subtract(transaction.getAmount()));
+        creditor.setBalance(creditor.getBalance().add(transaction.getAmount()));
+        accountRepository.save(debtor);
+        accountRepository.save(creditor);
     }
 
     private void validateAmount(Transaction transaction) throws ValidationException {
